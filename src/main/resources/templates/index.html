@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <title>coderChain搜索</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+
+<!--    <script th:src="@{/js/axios.min.js}"></script>-->
+<!--    <script th:src="@{/js/vue.min.js}"></script>-->
+    <script crossorigin="anonymous" integrity="sha512-pSyYzOKCLD2xoGM1GwkeHbdXgMRVsSqQaaUoHskx/HF09POwvow2VfVEdARIYwdeFLbu+2FCOTRYuiyeGxXkEg==" src="https://lib.baomitu.com/vue/2.6.14/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js" integrity="sha512-bPh3uwgU5qEMipS/VOmRqynnMXGGSRv+72H/N260MQeXZIK4PG48401Bsby9Nq5P5fz7hy5UGNmC/W1Z51h2GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.7/index.js" integrity="sha512-1C6Z64XO+zELpGz0pf2VFPaATU+pXzEheLC1RyPbYJUJCEZbJXzXFg4qZ+VrGyhVutouZ/VsmS9T+tUgu3pz9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+
+
+
+</head>
+
+<body class="pg">
+<div class="page" id="app">
+    <div id="mallPage" class=" mallist tmall- page-not-market ">
+
+        <!-- 头部搜索 -->
+        <div id="header" class=" header-list-app">
+            <div class="headerLayout">
+                <div class="headerCon ">
+                    <!-- Logo-->
+                    <h1 id="mallLogo" style="text-align: center">
+                        <img th:src="@{/images/coderChain.png}" alt="">
+                    </h1>
+
+                    <div class="header-extra">
+
+                        <!--搜索-->
+                        <div id="mallSearch" class="mall-search">
+                            <form name="searchTop" class="mallSearch-form clearfix">
+                                <fieldset>
+                                    <legend>天猫搜索</legend>
+                                    <div class="mallSearch-input clearfix">
+                                        <div class="s-combobox" id="s-combobox-685">
+                                            <div class="s-combobox-input-wrap">
+                                                <input v-model="keyword" type="text" autocomplete="off" value="dd" id="mq"
+                                                       class="s-combobox-input" aria-haspopup="true">
+                                            </div>
+                                        </div>
+                                        <button  type="submit" @click.prevent="searchKey()" id="searchbtn">搜索</button>
+                                    </div>
+                                </fieldset>
+                            </form>
+                            <ul class="relKeyTop">
+                                <li><a>Java</a></li>
+                                <li><a>JavaScript</a></li>
+                                <li><a>C</a></li>
+                                <li><a>C++</a></li>
+                                <li><a>python</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品详情页面 -->
+        <div id="content">
+            <div class="main">
+                <!-- 品牌分类 -->
+                <form class="navAttrsForm">
+                    <div class="attrs j_NavAttrs" style="display:block">
+                        <div class="brandAttr j_nav_brand">
+                            <div class="j_Brand attr">
+                                <div class="attrKey">
+                                    品牌
+                                </div>
+                                <div class="attrValues">
+                                    <ul class="av-collapse row-2">
+                                        <li><a href="#"> JavaScript </a></li>
+                                        <li><a href="#"> Java </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 排序规则 -->
+                <div class="filter clearfix">
+                    <a class="fSort fSort-cur">综合<i class="f-ico-arrow-d"></i></a>
+                    <a class="fSort">人气<i class="f-ico-arrow-d"></i></a>
+                    <a class="fSort">新品<i class="f-ico-arrow-d"></i></a>
+                    <a class="fSort">销量<i class="f-ico-arrow-d"></i></a>
+                    <a class="fSort">价格<i class="f-ico-triangle-mt"></i><i class="f-ico-triangle-mb"></i></a>
+                </div>
+
+                <!-- 商品详情 -->
+                <div class="view grid-nosku">
+
+                    <div class="product" v-for="result in results">
+                        <div class="product-iWrap">
+                            <!--商品封面-->
+                            <div class="productImg-wrap">
+                                <a class="productImg">
+                                    <img :src="result.img">
+                                </a>
+                            </div>
+                            <!--价格-->
+                            <p class="productPrice">
+                                <em>{{result.price}}</em>
+                            </p>
+                            <!--标题-->
+                            <p class="productTitle">
+                                <a v-html="result.title"></a>
+                            </p>
+                            <!-- 店铺名 -->
+                            <div class="productShop">
+                                <span>店铺： 狂神说Java </span>
+                            </div>
+                            <!-- 成交信息 -->
+                            <p class="productStatus">
+                                <span>月成交<em>999笔</em></span>
+                                <span>评价 <a>3</a></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="block" style="text-align: center" v-if="subscript">
+            <el-pagination
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    layout="prev, pager, next"
+                    :total="50">
+            </el-pagination>
+        </div>
+    </div>
+</div>
+
+
+
+<!--前端使用Vue，实现前后端分离-->
+<script>
+
+
+
+    new Vue({
+        el: '#app',
+        data: {
+            keyword: '', //搜索的关键字
+            results: [], //搜索的全部结果
+            caseData: [], //切割搜索结果
+            subscript: false,
+            pageSize: 20,
+            currentPage: 1
+        },
+        methods: {
+            searchKey() {
+                let keyword =  this.keyword;
+                let currentPage = this.currentPage;
+                console.log(keyword);
+                axios.get('search/'+keyword+"/"+currentPage+"/20").then(response=>{
+                    console.log(response);
+                    this.results = null;
+                    this.results = response.data; // 绑定数据
+                    this.subscript = true;
+                    // this.getPageData();
+                })
+            },
+            // getPageData() {
+            //     let start = (this.currentPage - 1) * this.pageSize;
+            //     let end = start + this.pageSize;
+            //     this.caseData = this.results.slice(start,end);
+            // },
+
+            // //分页自带的函数，当pageSize变化时会触发此函数
+            // handleSizeChange(val) {
+            //     this.pageSize = val;
+            //     this.searchKey();
+            // },
+            //分页自带函数，当currentPage变化时会触发此函数
+            handleCurrentChange(val) {
+                this.currentPage = val;
+                console.log(val);
+                this.searchKey();
+            }
+        }
+
+    })
+
+
+
+</script>
+<!-- 引入elementui样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+
+</body>
+</html>
