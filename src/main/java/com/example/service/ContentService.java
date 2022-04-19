@@ -55,6 +55,7 @@ public class ContentService {
                     .source(JSON.toJSONString(contents.get(i)), XContentType.JSON));
         }
         BulkResponse bulk = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+        System.out.println("打印的数量为："+contents.size());
         return !bulk.hasFailures();
     }
 
