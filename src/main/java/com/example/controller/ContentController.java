@@ -12,12 +12,14 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -28,15 +30,29 @@ public class ContentController {
 
     @GetMapping("/parse/{keyword}")
     public Boolean parse(@PathVariable("keyword") String keyword) throws Exception {
-        return contentService.parseContent(keyword);
+//        因为es中的term查询无法识别大写字母，所以这里将大写字母转换成为小写字母
+        String keywords = keyword.toLowerCase();
+        return contentService.parseContent(keywords);
     }
 
     @GetMapping("/search/{keyword}/{pageNo}/{pageSize}")
-    public List<Map<String,Object>> search(@PathVariable("keyword") String keyword,@PathVariable("pageNo") int pageNo,@PathVariable("pageSize") int pageSize) throws IOException {
+    public List<Map<String,Object>> search(@PathVariable("keyword") String keyword,@PathVariable("pageNo") int pageNo,@PathVariable("pageSize") int pageSize) throws Exception {
+        String keywords = keyword.toLowerCase();
+        return contentService.searchPageHighlightBuilder(keywords, pageNo, pageSize);
 
 
-        return contentService.searchPageHighlightBuilder(keyword, pageNo, pageSize);
+    }
 
+
+    @GetMapping("/api/file/onlinePreview")
+    public OutputStream onlinePreview(@RequestParam("url") String url, HttpServletResponse response) throws Exception{
+
+        return contentService.onlinePreview(url,response);
+    }
+
+    @GetMapping("/api/file/download")
+    public HttpServletResponse downloadFile(@RequestParam("url") String url, HttpServletResponse response) {
+        return contentService.download(url,response);
     }
 
 }

@@ -86,6 +86,14 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.13</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.artofsolving/jodconverter -->
+        <dependency>
+            <groupId>com.artofsolving</groupId>
+            <artifactId>jodconverter</artifactId>
+            <version>2.2.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

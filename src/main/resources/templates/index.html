@@ -19,6 +19,8 @@
 </head>
 
 <body class="pg">
+
+
 <div class="page" id="app">
     <div id="mallPage" class=" mallist tmall- page-not-market ">
 
@@ -62,6 +64,11 @@
             </div>
         </div>
 
+<!--        <el-dialog title="PDF预览":visible.sync="viewVisible" width="70%" center>-->
+<!--            <template>-->
+<!--                <iframe class="prism-player":src="pdf.Url" width="100%" height="800px"></iframe>-->
+<!--            </template>-->
+<!--        </el-dialog>-->
         <!-- 商品详情页面 -->
         <div id="content">
             <div class="main">
@@ -71,7 +78,7 @@
                         <div class="brandAttr j_nav_brand">
                             <div class="j_Brand attr">
                                 <div class="attrKey">
-                                    品牌
+                                    语言
                                 </div>
                                 <div class="attrValues">
                                     <ul class="av-collapse row-2">
@@ -96,7 +103,12 @@
                 <!-- 商品详情 -->
                 <div class="view grid-nosku">
 
-                    <div class="product" v-for="result in results">
+
+<!--onclick="window.location.href='https://www.baidu.com'"-->
+                    <div class="product" v-for="result in results" >
+<!--                        <div v-for="content in content" onclick="this.openOffice()">-->
+<!--                        <a :href="pdfSrc" target="_blank">hhh</a>-->
+<!--                        </div>-->
                         <div class="product-iWrap">
                             <!--商品封面-->
                             <div class="productImg-wrap">
@@ -121,8 +133,20 @@
                                 <span>月成交<em>999笔</em></span>
                                 <span>评价 <a>3</a></span>
                             </p>
+
+                            <div class="operate">
+                                <el-row>
+                                    <el-button type="primary" round onclick="openOffice()">查看</el-button>
+                                    <el-button type="success" plain onclick="downloadFile()">下载</el-button>
+                                    <el-button type="warning" icon="el-icon-star-off" circle></el-button>
+                                </el-row>
+                            </div>
                         </div>
+
+
                     </div>
+
+
                 </div>
             </div>
         </div>
@@ -145,6 +169,10 @@
 
 
     new Vue({
+        created() {
+            window.openOffice = this.openOffice;
+            window.downloadFile = this.downloadFile;
+        },
         el: '#app',
         data: {
             keyword: '', //搜索的关键字
@@ -152,21 +180,63 @@
             caseData: [], //切割搜索结果
             subscript: false,
             pageSize: 20,
-            currentPage: 1
+            currentPage: 1,
+            content: [],
+            pdfSrc:''
         },
         methods: {
+            downloadFile() {
+                // try {
+                //     axios.get("/api/file/onlinePreview/?url=/Users/yuhaikun/Downloads/test.docx",{responseType:'arraybuffer'}).then(res=>{
+                //         const blob = new window.Blob([res.data],{
+                //             type:'application/pdf;charset-UTF-8',
+                //         });
+                //
+                //         console.log(blob);
+                //         this.pdfSrc = URL.createObjectURL(blob);
+                //         let aHtml = document.createElement('a')
+                //         aHtml.href = this.pdfSrc
+                //         aHtml.download = '11'
+                //         document.body.appendChild(aHtml)
+                //         aHtml.click()
+                //         document.body.removeChild(aHtml)
+                //
+                //     })
+                //
+                // } catch (e) {
+                // }
+
+                axios.get("/api/file/download/?url=/Users/yuhaikun/Downloads/test.docx",{responseType: 'arraybuffer'}).then(res=>{
+                    const blob = new window.Blob([res.data],{
+                        type: 'application/msword;charset-UTF-8'
+                    });
+                    this.pdfSrc = URL.createObjectURL(blob);
+                            let aHtml = document.createElement('a')
+                            aHtml.href = this.pdfSrc
+
+                            document.body.appendChild(aHtml)
+                            aHtml.click()
+                            document.body.removeChild(aHtml)
+                })
+
+            },
+
             searchKey() {
                 let keyword =  this.keyword;
                 let currentPage = this.currentPage;
                 console.log(keyword);
                 axios.get('search/'+keyword+"/"+currentPage+"/20").then(response=>{
-                    console.log(response);
-                    this.results = null;
-                    this.results = response.data; // 绑定数据
-                    this.subscript = true;
+
+                        console.log(response);
+                        this.results = null;
+                        this.results = response.data; // 绑定数据
+                        this.subscript = true;
+
+
                     // this.getPageData();
                 })
             },
+
             // getPageData() {
             //     let start = (this.currentPage - 1) * this.pageSize;
             //     let end = start + this.pageSize;
@@ -183,7 +253,22 @@
                 this.currentPage = val;
                 console.log(val);
                 this.searchKey();
+            },
+            openOffice() {
+                axios.get("/api/file/onlinePreview/?url=/Users/yuhaikun/Downloads/test.docx",{responseType:'arraybuffer'}).then(res=>{
+                    const blob = new window.Blob([res.data],{
+                        type:'application/pdf;charset-UTF-8',
+                    });
+
+                    console.log(blob);
+                    this.pdfSrc = URL.createObjectURL(blob);
+                    window.open(this.pdfSrc);
+
+                })
+
             }
+
+
         }
 
     })
@@ -191,6 +276,22 @@
 
 
 </script>
+<!--<script>-->
+<!--    import pdf from 'vue-pdf'-->
+
+<!--    export default {-->
+<!--        components: {-->
+<!--            pdf-->
+<!--        },-->
+<!--        data() {-->
+<!--            return {-->
+<!--                pdfUrl: '/pdf/web/viewer.html?file=' + encodeURIComponent('http://localhost:9090/api/file/onlinePreview/?url=/Users/yuhaikun/Downloads/test.pdf'),-->
+<!--                viewVisible: true,-->
+<!--            }-->
+<!--        }-->
+<!--    }-->
+
+<!--</script>-->
 <!-- 引入elementui样式 -->
 <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 

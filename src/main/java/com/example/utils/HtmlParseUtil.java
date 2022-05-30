@@ -17,6 +17,9 @@ import org.jsoup.select.Elements;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -41,6 +44,7 @@ public class HtmlParseUtil {
 
 
     public List<Content> parseJD(String keywords) throws Exception {
+
         //创建httpclient实例
         CloseableHttpClient httpClient = HttpClients.createDefault();
         //创建httpget实例
@@ -63,7 +67,7 @@ public class HtmlParseUtil {
         //获取返回实体
         String content = EntityUtils.toString(entity, "utf-8");
 
-
+//        单纯使用jsoup的方法
 //        //获取请求 https://search.jd.com/Search?keyword=java
 //        // 前提，需要联网，ajax不能获取到！模拟浏览器
 //        String url = "https://search.jd.com/Search?keyword=" + keywords;
@@ -110,5 +114,6 @@ public class HtmlParseUtil {
         httpClient.close();
         return goodsList;
     }
+
 
 }

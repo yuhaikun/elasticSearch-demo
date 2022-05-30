@@ -3,6 +3,9 @@ package com.example.service;
 
 import com.alibaba.fastjson.JSON;
 import com.example.pojo.Content;
+import com.example.utils.ESconsts;
+import com.example.utils.FileConvertUtil;
+import com.example.utils.FormatUtil;
 import com.example.utils.HtmlParseUtil;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -24,9 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.naming.directory.SearchResult;
-import java.io.IOException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -55,7 +63,7 @@ public class ContentService {
                     .source(JSON.toJSONString(contents.get(i)), XContentType.JSON));
         }
         BulkResponse bulk = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        System.out.println("打印的数量为："+contents.size());
+//        System.out.println("打印的数量为："+contents.size());
         return !bulk.hasFailures();
     }
 
@@ -93,7 +101,7 @@ public class ContentService {
 
 
     //获取这些数据实现搜索高亮功能
-    public List<Map<String,Object>> searchPageHighlightBuilder(String keyword,int pageNo,int pageSize) throws IOException {
+    public List<Map<String,Object>> searchPageHighlightBuilder(String keyword,int pageNo,int pageSize) throws Exception {
         if (pageNo <= 1) {
             pageNo = 1;
         }
@@ -136,12 +144,99 @@ public class ContentService {
                 for (Text text : fragments) {
                     n_title += text;
                 }
-                sourceAsMap.put("title",n_title);
+                sourceAsMap.put("title", n_title);
             }
 
             list.add(sourceAsMap);
         }
+//        System.out.println(list);
+//       这里判断数据是否为空，如果为空，则重新进行关键词载入
+        if (list.size() == 0) {
+//            System.out.println("11111");
+            parseContent(keyword);
+//            System.out.println("2222");
+            return searchPageHighlightBuilder(keyword, pageNo, pageSize);
+        }else {
+            return list;
+        }
 
-        return list;
+    }
+
+    /**
+     * @Description 系统文件在线预览接口
+     * @param url
+     * @param response
+     * @throws Exception
+     */
+    public OutputStream onlinePreview(String url, HttpServletResponse response) throws Exception {
+//        获取文件类型
+        String[] str = url.split("\\.");
+
+        System.out.println(str[0]);
+        if (str.length == 0) {
+            throw new Exception("文件格式不支持预览");
+        }
+        String suffix = str[str.length-1];
+//        函数 数组
+//        if (!suffix.equals("txt")&&!suffix.equals("doc")&&!suffix.equals("docx")&&!suffix.equals("xls")
+//            && !suffix.equals("xlsx")&& !suffix.equals("ppt")&& !suffix.equals("pptx")){
+//            System.out.println("后缀为："+suffix);
+//            throw new Exception("文件格式不支持预览");
+//        }
+
+        if (!FormatUtil.judgeFormat(suffix)) {
+            throw new Exception("文件格式不支持预览");
+        }
+
+
+        InputStream in = FileConvertUtil.convertLocalFile(url, suffix);
+        OutputStream outputStream = response.getOutputStream();
+//        创建存放文件内容的数组
+        byte[] buff = new byte[ESconsts.BYTEARRAY_LENGTH];
+//        所读取的内容使用n来接收
+        int n;
+//        当没有读取完，继续读取，循环
+        while((n=in.read(buff))!=-1){
+//            将字节数组的数据全部写入到输出流
+            outputStream.write(buff,0,n);
+        }
+//        强制将缓存区的数据进行输出
+        outputStream.flush();
+//        关流
+        outputStream.close();
+        in.close();
+        return outputStream;
+    }
+
+    public HttpServletResponse download(String path,HttpServletResponse response){
+        try {
+//        path是指想下载文件的路径
+            File file = new File(path);
+//        取得文件名
+            String filename = file.getName();
+//        取得文件的后缀名
+            String ext = filename.substring(filename.lastIndexOf(".")+1).toUpperCase();
+//        以流的形式下载文件
+            BufferedInputStream fis = new BufferedInputStream(new FileInputStream(path));
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+//        清空response
+            response.reset();
+//        设置response的header
+            response.addHeader("Content-Disposition","attachment;filename="+new String(filename.getBytes()));
+            response.addHeader("Content-Length",""+file.length());
+            OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+            response.setContentType("application/octet-stream");
+            toClient.write(buffer);
+            toClient.flush();
+            toClient.close();
+//            return toClient;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }
