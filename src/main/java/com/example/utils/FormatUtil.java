@@ -17,10 +17,11 @@ public class FormatUtil {
 //        }
 //        return false;
         for (int i = 0; i < ESconsts.legalFormat.values().length; i++) {
-            if (ESconsts.legalFormat.values()[i].toString().equals(suffix)){
+            if (ESconsts.legalFormat.values()[i].toString().equals(suffix.toUpperCase())){
                 return true;
             }
         }
         return false;
     }
 }
+

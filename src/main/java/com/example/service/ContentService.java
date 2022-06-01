@@ -184,7 +184,7 @@ public class ContentService {
 //            throw new Exception("文件格式不支持预览");
 //        }
 
-        if (!FormatUtil.judgeFormat(suffix)) {
+        if (FormatUtil.judgeFormat(suffix) == false) {
             throw new Exception("文件格式不支持预览");
         }
 

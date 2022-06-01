@@ -22,11 +22,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+
+@CrossOrigin
 @RestController
 public class ContentController {
 
     @Autowired
     private ContentService contentService;
+
 
     @GetMapping("/parse/{keyword}")
     public Boolean parse(@PathVariable("keyword") String keyword) throws Exception {
